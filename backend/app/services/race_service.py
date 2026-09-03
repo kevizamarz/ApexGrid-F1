@@ -3,6 +3,8 @@ from datetime import datetime
 
 import pandas as pd
 
+from typing import Any
+
 from app.core.config import get_settings
 from app.services import fastf1_service as ff
 from app.services.errors import UpstreamDataUnavailableError
@@ -10,7 +12,7 @@ from app.services.errors import UpstreamDataUnavailableError
 logger = logging.getLogger(__name__)
 
 
-def _format_timedelta(td: pd.Timedelta | None) -> str | None:
+def _format_timedelta(td: Any) -> str | None:
     """Format a pandas Timedelta as H:MM:SS.mmm for JSON output.
 
     JSON has no TimeDelta type, so we send a readable string.
