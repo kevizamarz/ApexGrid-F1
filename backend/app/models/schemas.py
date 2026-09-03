@@ -8,12 +8,12 @@ class PodiumDriver(BaseModel):
     driver_code: str = Field(..., description="3-letter code, e.g. 'NOR'.")
     full_name: str = Field(..., description="Full name, e.g. 'Lando Norris'.")
     team_name: str = Field(..., description="Constructor, e.g. 'McLaren'.")
-    driver_number: int | None = Field(None, description="Permanent driver number.")
-    grid_position: int | None = Field(None, description="Starting position.")
-    status: str | None = Field(None, description="e.g. 'Finished' or 'DNF'.")
-    points: float | None = Field(None, description="Points scored.")
+    driver_number: int | None = Field(default=None, description="Permanent driver number.")
+    grid_position: int | None = Field(default=None, description="Starting position.")
+    status: str | None = Field(default=None, description="e.g. 'Finished' or 'DNF'.")
+    points: float | None = Field(default=None, description="Points scored.")
     finish_gap: str | None = Field(
-        None,
+        default=None,
         description="F1 'Time' interval as H:MM:SS.mmm. Winner: total race time. "
         "All other finishers: time behind the winner.",
     )
@@ -31,8 +31,46 @@ class HeroResponse(BaseModel):
     country: str = Field(..., description="Host country, e.g. 'Netherlands'.")
     location: str = Field(..., description="Circuit/town, e.g. 'Zandvoort'.")
     race_date: str = Field(..., description="Race date (ISO), e.g. '2026-08-23'.")
-    total_laps: int | None = Field(None, description="Laps in the race.")
+    total_laps: int | None = Field(default=None, description="Laps in the race.")
     winner: PodiumDriver = Field(..., description="The race winner.")
     podium: list[PodiumDriver] = Field(
         ..., description="Top-3 finishers (index 0 == winner)."
+    )
+
+
+class DriverStanding(BaseModel):
+    """One row of the Drivers' Championship standings."""
+
+    position: int = Field(..., description="Championship position (1 = leader).")
+    driver_code: str = Field(..., description="3-letter code, e.g. 'NOR'.")
+    full_name: str = Field(..., description="Driver full name.")
+    nationality: str | None = Field(default=None, description="Driver nationality.")
+    team_name: str | None = Field(default=None, description="Constructor(s) they drive for.")
+    points: float = Field(..., description="Season points so far.")
+    wins: int = Field(..., description="Number of race wins.")
+
+
+class ConstructorStanding(BaseModel):
+    """One row of the Constructors' Championship standings."""
+
+    position: int = Field(..., description="Championship position (1 = leader).")
+    name: str = Field(..., description="Constructor/team name.")
+    nationality: str | None = Field(default=None, description="Team nationality.")
+    points: float = Field(..., description="Season points so far.")
+    wins: int = Field(..., description="Number of race wins.")
+
+
+class StandingsResponse(BaseModel):
+    """Payload for the championship standings (Drivers + Constructors).
+
+    Represents standings as of the most recent COMPLETED grand prix.
+    """
+
+    season: int = Field(..., description="Season year.")
+    round: int = Field(..., description="Round the standings are current up to.")
+    drivers: list[DriverStanding] = Field(
+        ..., description="Drivers' championship, ordered by position."
+    )
+    constructors: list[ConstructorStanding] = Field(
+        ..., description="Constructors' championship, ordered by position."
     )
