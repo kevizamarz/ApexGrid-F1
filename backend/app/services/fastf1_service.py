@@ -36,6 +36,25 @@ def _get_session(year: int, gp_round: int, session_type: str) -> Session:
         )
     return fastf1.get_session(year, gp_round, st)
 
+def _ergast():
+    from fastf1.ergast import Ergast
+    return Ergast()
+
+
+def get_driver_standings_raw(season: int):
+    """Return the raw DriverStandings list for a season (latest completed GP)."""
+    resp = _ergast().get_driver_standings(season=season, result_type="raw")
+    block = resp[0]  # single request -> one element
+    return block["season"], block["round"], block["DriverStandings"]
+
+
+def get_constructor_standings_raw(season: int):
+    """Return the raw ConstructorStandings list (latest completed GP)."""
+    resp = _ergast().get_constructor_standings(season=season, result_type="raw")
+    block = resp[0]
+    return block["season"], block["round"], block["ConstructorStandings"]
+
+
 # --- Schedule helpers ------------------------------------------------------
 
 
