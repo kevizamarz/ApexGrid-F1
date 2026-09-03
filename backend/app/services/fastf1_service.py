@@ -1,9 +1,11 @@
 import logging
-import os
 from pathlib import Path
 
+import pandas as pd
+from typing import Any
 import fastf1
 from fastf1.core import Session
+from fastf1.ergast import Ergast
 
 from app.core.config import get_settings
 from app.services.errors import UpstreamDataUnavailableError
@@ -18,7 +20,6 @@ _SESSION_TYPES = ("FP1", "FP2", "FP3", "Q", "S", "R")
 
 
 def init_cache() -> None:
-    
     settings = get_settings()
     cache_path = Path(settings.fastf1_cache_dir)
     cache_path.mkdir(parents=True, exist_ok=True)
@@ -28,7 +29,6 @@ def init_cache() -> None:
 
 
 def _get_session(year: int, gp_round: int, session_type: str) -> Session:
-    
     st = session_type.upper()
     if st not in _SESSION_TYPES:
         raise ValueError(
@@ -36,21 +36,21 @@ def _get_session(year: int, gp_round: int, session_type: str) -> Session:
         )
     return fastf1.get_session(year, gp_round, st)
 
-def _ergast():
-    from fastf1.ergast import Ergast
+
+def _ergast() -> Ergast:
     return Ergast()
 
 
 def get_driver_standings_raw(season: int):
     """Return the raw DriverStandings list for a season (latest completed GP)."""
-    resp = _ergast().get_driver_standings(season=season, result_type="raw")
+    resp: Any = _ergast().get_driver_standings(season=season, result_type="raw")
     block = resp[0]  # single request -> one element
     return block["season"], block["round"], block["DriverStandings"]
 
 
 def get_constructor_standings_raw(season: int):
     """Return the raw ConstructorStandings list (latest completed GP)."""
-    resp = _ergast().get_constructor_standings(season=season, result_type="raw")
+    resp: Any = _ergast().get_constructor_standings(season=season, result_type="raw")
     block = resp[0]
     return block["season"], block["round"], block["ConstructorStandings"]
 
@@ -65,8 +65,8 @@ def get_schedule(year: int):
     dropping the pre-season testing entry which fastf1 labels round 0.
     """
     schedule = fastf1.get_event_schedule(year)
-    races = schedule[schedule["RoundNumber"] >= 1].copy()
-    races = races.sort_values("RoundNumber").reset_index(drop=True)
+    races = pd.DataFrame(schedule[schedule["RoundNumber"] >= 1]).copy()
+    races = races.sort_values(by="RoundNumber").reset_index(drop=True)
     return races
 
 

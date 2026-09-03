@@ -1,8 +1,5 @@
-from app.api.v1.endpoints import hero
-from app.api.v1.endpoints import standings
 from fastapi import APIRouter
-
-from app.api.v1.endpoints import health
+from app.api.v1.endpoints import health, hero, standings
 
 # Version 1 router. Every route added below is automatically namespaced
 # under /api/v1 by the main app.
